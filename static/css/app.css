@@ -316,7 +316,7 @@ button.bg-paper:hover {
 input.field-money {
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
-  text-align: right;
+  text-align: left;
 }
 
 .field-label {

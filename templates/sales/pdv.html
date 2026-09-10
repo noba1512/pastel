@@ -83,7 +83,7 @@
           {% if can_apply_discount %}
           <label class="flex items-center justify-between gap-3 mt-2 text-sm">
             <span>Desconto</span>
-            <input id="cart-discount" class="field field-compact tabular text-right w-28" type="text" inputmode="decimal" value="0,00">
+            <input id="cart-discount" class="field field-compact field-money tabular w-28" type="text" inputmode="decimal" data-money placeholder="0,00" autocomplete="off">
           </label>
           {% else %}
           <input id="cart-discount" type="hidden" value="0">
@@ -108,7 +108,7 @@
           <div id="cash-box" class="mt-4 space-y-2">
             <label class="block min-w-0">
               <span class="field-label">Valor recebido</span>
-              <input id="amount-received" class="field tabular text-lg" type="text" inputmode="decimal" placeholder="0,00">
+              <input id="amount-received" class="field field-money tabular text-lg" type="text" inputmode="decimal" data-money placeholder="0,00" autocomplete="off">
             </label>
             <button id="btn-exact" type="button" class="w-full min-h-11 py-2 bg-ink/10 text-sm">Valor exato</button>
             <p class="flex justify-between">

@@ -21,12 +21,31 @@ def money(value):
     return amount.quantize(TWOPLACES, rounding=ROUND_HALF_UP)
 
 
+def format_money_br(value):
+    amount = money(value)
+    negative = amount < 0
+    cents = int((abs(amount) * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+    reais, centavos = divmod(cents, 100)
+    grouped = f"{reais:,}".replace(",", ".")
+    if centavos == 0:
+        formatted = grouped
+    else:
+        formatted = f"{grouped},{centavos:02d}"
+    return f"-{formatted}" if negative else formatted
+
+
 def parse_money_input(raw):
     if raw is None or str(raw).strip() == "":
         raise DomainError("Valor monetário inválido.")
     text = str(raw).strip().replace("R$", "").replace("\xa0", "").replace(" ", "")
     if "," in text:
         text = text.replace(".", "").replace(",", ".")
+    elif text.count(".") > 1:
+        text = text.replace(".", "")
+    elif text.count(".") == 1:
+        _left, right = text.split(".")
+        if len(right) == 3:
+            text = text.replace(".", "")
     return money(text)
 
 

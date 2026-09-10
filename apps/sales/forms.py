@@ -1,6 +1,7 @@
 from django import forms
 
-from apps.core.forms import style_form_widgets
+from apps.core.exceptions import DomainError
+from apps.core.forms import mark_money_field, style_form_widgets
 from apps.sales.models import Payment, Sale
 from apps.sales.services import parse_money_input
 
@@ -38,17 +39,23 @@ class SaleCancelForm(forms.Form):
 class CashOpenForm(forms.Form):
     opening_amount = forms.CharField(
         label="Fundo de caixa",
-        initial="0,00",
+        required=False,
         help_text="Dinheiro na gaveta na abertura.",
     )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         style_form_widgets(self)
-        self.fields["opening_amount"].widget.attrs["inputmode"] = "decimal"
+        mark_money_field(self.fields["opening_amount"])
 
     def clean_opening_amount(self):
-        return parse_money_input(self.cleaned_data["opening_amount"])
+        raw = (self.cleaned_data.get("opening_amount") or "").strip()
+        if not raw:
+            return parse_money_input("0")
+        try:
+            return parse_money_input(raw)
+        except DomainError as exc:
+            raise forms.ValidationError(str(exc)) from exc
 
 
 class CashCloseForm(forms.Form):
@@ -80,9 +87,4 @@ class CashCloseForm(forms.Form):
         super().__init__(*args, **kwargs)
         style_form_widgets(self)
         for name in ("counted_cash", "counted_pix", "counted_debit", "counted_credit"):
-            self.fields[name].widget.attrs["inputmode"] = "decimal"
-            self.fields[name].widget.attrs["placeholder"] = "0,00"
-            self.fields[name].widget.attrs["autocomplete"] = "off"
-            self.fields[name].widget.attrs["class"] = (
-                self.fields[name].widget.attrs.get("class", "") + " field-money"
-            ).strip()
+            mark_money_field(self.fields[name])

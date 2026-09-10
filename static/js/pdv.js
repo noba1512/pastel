@@ -32,6 +32,9 @@
   let category = "";
 
   function moneyFromInput(raw) {
+    if (window.PastelMoney) {
+      return window.PastelMoney.parse(raw) || 0;
+    }
     if (raw == null || raw === "") return 0;
     const text = String(raw).trim().replace("R$", "").replace(/\s/g, "");
     if (!text) return 0;
@@ -205,7 +208,7 @@
 
   function clearCart() {
     cart.clear();
-    if (discountEl && discountEl.type !== "hidden") discountEl.value = "0,00";
+    if (discountEl && discountEl.type !== "hidden") discountEl.value = "";
     receivedEl.value = "";
     receiptNumber.textContent = "NOVA";
     renderCart();
@@ -351,7 +354,9 @@
   const exactBtn = document.getElementById("btn-exact");
   if (exactBtn) {
     exactBtn.addEventListener("click", () => {
-      receivedEl.value = cartTotals().total.toFixed(2).replace(".", ",");
+      receivedEl.value = window.PastelMoney
+        ? window.PastelMoney.fromNumber(cartTotals().total)
+        : cartTotals().total.toFixed(2).replace(".", ",");
       updateCash();
       receivedEl.focus();
     });

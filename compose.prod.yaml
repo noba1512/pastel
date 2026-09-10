@@ -1,0 +1,24 @@
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - appdata:/app/data
+      - staticfiles:/app/staticfiles
+    environment:
+      SQLITE_PATH: /app/data/db.sqlite3
+    expose:
+      - "8000"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.pastel.rule=Host(`pastel.attenda.tech`)
+      - traefik.http.routers.pastel.entrypoints=websecure
+      - traefik.http.routers.pastel.tls.certresolver=letsencrypt
+      - traefik.http.routers.pastel.service=pastel
+      - traefik.http.services.pastel.loadbalancer.server.port=8000
+
+volumes:
+  appdata:
+  staticfiles:

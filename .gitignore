@@ -6,6 +6,7 @@ __pycache__/
 data/*.sqlite3
 data/*.sqlite3-journal
 data/spool/
+data/_vps_*.py
 staticfiles/
 .venv/
 venv/

@@ -55,6 +55,7 @@
     if (!root || !input || !out) return;
     const expected = Number(root.dataset.expectedCash || 0);
     function parseMoney(raw) {
+      if (window.PastelMoney) return window.PastelMoney.parse(raw);
       const text = String(raw || "").replace("R$", "").replace(/\s/g, "");
       if (!text) return null;
       const normalized = text.includes(",")

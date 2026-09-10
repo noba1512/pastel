@@ -382,3 +382,17 @@ class CashSessionTests(TestCase):
             {"tipo": "fechamento"},
         )
         self.assertRedirects(response, reverse("sales:cash_detail", args=[session.pk]))
+
+
+class MoneyInputTests(TestCase):
+    def test_parse_pt_br_thousands_and_cents(self):
+        from apps.sales.services import format_money_br, parse_money_input
+
+        self.assertEqual(parse_money_input("1.234,56"), Decimal("1234.56"))
+        self.assertEqual(parse_money_input("14,50"), Decimal("14.50"))
+        self.assertEqual(parse_money_input("1.234"), Decimal("1234.00"))
+        self.assertEqual(parse_money_input("12.50"), Decimal("12.50"))
+        self.assertEqual(format_money_br(Decimal("1234.5")), "1.234,50")
+        self.assertEqual(format_money_br("14"), "14")
+        self.assertEqual(format_money_br("14.50"), "14,50")
+

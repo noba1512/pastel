@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Comprovante {{ sale.number }} — {{ store_name }}</title>
+  {% load static pastel_tags %}
+  <link rel="stylesheet" href="{% static 'css/receipt.css' %}">
+</head>
+<body class="{% if autoprint %}is-autoprint{% endif %}">
+  <div class="no-print toolbar">
+    <button type="button" id="btn-print">Imprimir</button>
+    <a href="{% url 'sales:detail' sale.pk %}">Voltar à venda</a>
+  </div>
+
+  <article class="cupom" aria-label="Comprovante da venda {{ sale.number }}">
+    <header class="head">
+      <p class="store">{{ store_name }}</p>
+      {% if store_address %}<p>{{ store_address }}</p>{% endif %}
+      {% if store_document %}<p>{{ store_document }}</p>{% endif %}
+      {% if store_phone %}<p>{{ store_phone }}</p>{% endif %}
+    </header>
+
+    <hr class="rule">
+    <p class="center caps">Cupom não fiscal</p>
+    <p class="center muted">Não substitui documento fiscal</p>
+    <hr class="rule">
+
+    <p class="row">
+      <span>Nº {{ sale.number }}</span>
+      <span>{{ sale.created_at|datetime_br }}</span>
+    </p>
+    <p>Operador: {{ sale.operator.username }}</p>
+    {% if sale.status == "CANCELED" %}
+    <p class="canceled">CANCELADA</p>
+    {% endif %}
+
+    <hr class="rule">
+
+    <table class="items">
+      <thead>
+        <tr>
+          <th class="qty">Qtd</th>
+          <th>Item</th>
+          <th class="money">Valor</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in sale.items.all %}
+        <tr>
+          <td class="qty">{{ item.quantity }}</td>
+          <td>{{ item.product_name_snapshot }}</td>
+          <td class="money">{{ item.subtotal|brl }}</td>
+        </tr>
+        <tr class="unit">
+          <td></td>
+          <td colspan="2">{{ item.unit_price|brl }} un.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <hr class="rule">
+    <p class="row"><span>Subtotal</span><span>{{ sale.subtotal|brl }}</span></p>
+    {% if sale.discount %}
+    <p class="row"><span>Desconto</span><span>- {{ sale.discount|brl }}</span></p>
+    {% endif %}
+    <p class="row total"><span>Total</span><span>{{ sale.total|brl }}</span></p>
+
+    <hr class="rule">
+    {% with pay=sale.payment %}
+    <p class="row"><span>{{ pay.method|payment_label }}</span><span>{{ pay.amount|brl }}</span></p>
+    {% if pay.amount_received != None %}
+    <p class="row"><span>Recebido</span><span>{{ pay.amount_received|brl }}</span></p>
+    <p class="row"><span>Troco</span><span>{{ pay.change|brl }}</span></p>
+    {% endif %}
+    {% endwith %}
+
+    <hr class="rule">
+    <p class="center footer">{{ store_footer }}</p>
+  </article>
+
+  <script>
+    (function () {
+      const printBtn = document.getElementById("btn-print");
+      if (printBtn) printBtn.addEventListener("click", () => window.print());
+      {% if autoprint %}
+      window.addEventListener("load", () => {
+        window.setTimeout(() => {
+          window.focus();
+          window.print();
+        }, 200);
+      });
+      window.addEventListener("afterprint", () => window.close());
+      {% endif %}
+    })();
+  </script>
+</body>
+</html>

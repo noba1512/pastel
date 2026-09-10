@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Ajuste de estoque — Pastel da TATI{% endblock %}
+{% block page_title %}Ajuste de estoque{% endblock %}
+{% block content %}
+<form method="post" class="ticket text-ink w-full px-4 py-5 sm:px-6 md:px-8" data-busy-submit data-busy-label="Registrando…">
+  {% csrf_token %}
+  <p class="mb-4 text-sm text-ink/70">Todo ajuste gera movimentação. Não altera quantidade sem histórico.</p>
+  {% include "components/form_fields.html" %}
+  <div class="form-actions">
+    <button class="px-5 py-3 bg-ink text-paper font-semibold" type="submit">Registrar ajuste</button>
+    <a class="px-5 py-3 bg-ink/10" href="{% url 'inventory:stock_list' %}">Voltar</a>
+  </div>
+</form>
+{% endblock %}

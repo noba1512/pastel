@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load pastel_tags %}
+{% block title %}Abertura de caixa — Pastel da TATI{% endblock %}
+{% block page_title %}Abrir caixa{% endblock %}
+{% block content %}
+<form method="post" class="ticket text-ink w-full max-w-xl" data-busy-submit data-busy-label="Abrindo…">
+  {% csrf_token %}
+  <div class="ticket-perforation"></div>
+  <div class="px-5 py-5">
+    <p class="font-mono text-[11px] tracking-[0.22em] uppercase">Abertura</p>
+    <h2 class="mt-2 text-2xl font-semibold leading-none">Fundo na gaveta</h2>
+    <p class="mt-3 text-ink/70">Sem caixa aberto o PDV não vende. O comprovante sai no terminal.</p>
+    <div class="mt-5">
+      {% include "components/form_fields.html" %}
+    </div>
+    <div class="form-actions">
+      <button class="px-5 py-3 bg-ink text-paper font-semibold" type="submit">Abrir e imprimir</button>
+      <a class="px-5 py-3 bg-ink/10 text-center" href="{% url 'sales:cash_list' %}">Histórico</a>
+    </div>
+  </div>
+  <div class="ticket-perforation"></div>
+</form>
+{% endblock %}

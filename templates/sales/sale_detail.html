@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load pastel_tags %}
+{% block title %}Venda {{ sale.number }} — Pastel da TATI{% endblock %}
+{% block page_title %}Venda {{ sale.number }}{% endblock %}
+{% block content %}
+<div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
+  <div class="ticket text-ink">
+    <div class="ticket-perforation"></div>
+    <div class="px-5 py-5">
+    <p class="font-mono text-[11px] tracking-[0.22em] uppercase">Cupom {{ sale.number }}</p>
+    <p class="mt-2">{{ sale.created_at|datetime_br }} · {{ sale.operator.username }}</p>
+    {% if sale.session %}
+    <p class="mt-1 font-mono text-sm"><a class="underline" href="{% url 'sales:cash_detail' sale.session_id %}">{{ sale.session.number }}</a></p>
+    {% endif %}
+    <p class="mt-1 {% if sale.status == 'CANCELED' %}text-alarm font-semibold{% endif %}">{{ sale.status|sale_status_label }}</p>
+    <hr class="dash-rule my-4">
+    <table class="w-full text-left">
+      <thead class="font-mono text-[12px] uppercase text-ink/60">
+        <tr>
+          <th class="py-2">Produto</th>
+          <th class="py-2">Qtd</th>
+          <th class="py-2">Unitário</th>
+          <th class="py-2 text-right">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in sale.items.all %}
+        <tr class="border-t border-ink/10">
+          <td class="py-2">{{ item.product_name_snapshot }}</td>
+          <td class="py-2 tabular">{{ item.quantity }}</td>
+          <td class="py-2 tabular">{{ item.unit_price|brl }}</td>
+          <td class="py-2 tabular text-right">{{ item.subtotal|brl }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <hr class="dash-rule my-4">
+    <p class="flex justify-between"><span>Subtotal</span><span class="tabular">{{ sale.subtotal|brl }}</span></p>
+    <p class="flex justify-between"><span>Desconto</span><span class="tabular">{{ sale.discount|brl }}</span></p>
+    <p class="mt-3 flex justify-between items-end">
+      <span class="font-mono text-[11px] tracking-[0.18em] uppercase">Total</span>
+      <span class="tabular text-3xl font-semibold">{{ sale.total|brl }}</span>
+    </p>
+    </div>
+    <div class="ticket-perforation"></div>
+  </div>
+
+  <div class="space-y-4">
+    <div class="ticket text-ink px-5 py-5">
+      <p class="font-mono text-[11px] tracking-[0.22em] uppercase">Pagamento</p>
+      {% with pay=sale.payment %}
+      <p class="mt-3 text-lg">{{ pay.method|payment_label }}</p>
+      <p class="flex justify-between mt-2"><span>Valor</span><span class="tabular">{{ pay.amount|brl }}</span></p>
+      {% if pay.amount_received != None %}
+      <p class="flex justify-between"><span>Recebido</span><span class="tabular">{{ pay.amount_received|brl }}</span></p>
+      <p class="flex justify-between"><span>Troco</span><span class="tabular">{{ pay.change|brl }}</span></p>
+      {% endif %}
+      {% endwith %}
+      {% if sale.canceled_at %}
+      <hr class="dash-rule my-4">
+      <p class="text-alarm font-semibold">Cancelada em {{ sale.canceled_at|datetime_br }}</p>
+      <p>Por {{ sale.canceled_by }}</p>
+      <p class="mt-2">{{ sale.cancel_reason }}</p>
+      {% endif %}
+    </div>
+    <form method="post" action="{% url 'sales:print' sale.pk %}">
+      {% csrf_token %}
+      <button class="block w-full py-3 bg-ink text-paper font-semibold" type="submit">Imprimir comprovante</button>
+    </form>
+    <a class="block w-full py-3 bg-ink/10 text-center" href="{% url 'sales:receipt' sale.pk %}">Ver cupom</a>
+    <a class="block w-full py-3 bg-ink/10 text-center" href="{% url 'sales:list' %}">Voltar às vendas</a>
+    {% if can_cancel %}
+    <form method="post" action="{% url 'sales:cancel' sale.pk %}" class="ticket text-ink px-5 py-5 space-y-3" data-busy-submit data-busy-label="Cancelando…">
+      {% csrf_token %}
+      <p class="font-semibold">Cancelar venda</p>
+      <p class="text-sm text-ink/70">Devolve estoque e registra estorno. Obrigatório informar motivo.</p>
+      {{ cancel_form.reason }}
+      <button class="w-full py-3 bg-alarm text-paper font-semibold" type="submit">Cancelar venda</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

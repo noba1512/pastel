@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Categorias — Pastel da TATI{% endblock %}
+{% block page_title %}Categorias{% endblock %}
+{% block content %}
+<div class="flex justify-end mb-5">
+  <a class="min-h-11 px-4 py-2.5 bg-paper text-ink font-semibold" href="{% url 'catalog:category_create' %}">Nova categoria</a>
+</div>
+<div class="md:hidden space-y-2">
+  {% for category in categories %}
+  <article class="ticket text-ink px-4 py-3 flex items-center justify-between gap-3">
+    <div>
+      <p class="font-semibold">{{ category.name }}</p>
+      <p class="text-sm">{% if category.active %}Ativa{% else %}<span class="text-alarm">Inativa</span>{% endif %}</p>
+    </div>
+    <a class="min-h-11 px-4 py-2 bg-ink text-paper" href="{% url 'catalog:category_update' category.pk %}">Editar</a>
+  </article>
+  {% empty %}
+  <p class="ticket text-ink px-4 py-6">Nenhuma categoria cadastrada.</p>
+  {% endfor %}
+</div>
+<div class="ticket text-ink overflow-x-auto hidden md:block">
+  <table class="op-table w-full text-left">
+    <thead class="font-mono text-[12px] uppercase tracking-wider text-ink/60">
+      <tr>
+        <th class="px-4 py-3">Nome</th>
+        <th class="px-4 py-3">Situação</th>
+        <th class="px-4 py-3"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for category in categories %}
+      <tr class="border-t border-ink/10" data-row-href="{% url 'catalog:category_update' category.pk %}" tabindex="0">
+        <td class="px-4 py-3">{{ category.name }}</td>
+        <td class="px-4 py-3">{% if category.active %}Ativa{% else %}<span class="text-alarm">Inativa</span>{% endif %}</td>
+        <td class="px-4 py-3 text-right">
+          <a class="underline" href="{% url 'catalog:category_update' category.pk %}">Editar</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td class="px-4 py-8" colspan="3">Nenhuma categoria cadastrada.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+<div class="ticket text-ink px-6 py-10">
+  <div class="ticket-perforation -mx-6 -mt-10 mb-6"></div>
+  <p class="text-xl font-semibold">{{ title }}</p>
+  <p class="mt-2 text-ink/60 max-w-prose">{{ body }}</p>
+  {% if action_url %}
+  <a href="{{ action_url }}" class="inline-block mt-6 px-5 py-3 bg-ink text-paper">{{ action_label }}</a>
+  {% endif %}
+</div>

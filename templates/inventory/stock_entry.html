@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Entrada de estoque — Pastel da TATI{% endblock %}
+{% block page_title %}Entrada de estoque{% endblock %}
+{% block content %}
+<form method="post" class="ticket text-ink w-full px-4 py-5 sm:px-6 md:px-8" data-busy-submit data-busy-label="Registrando…">
+  {% csrf_token %}
+  {% include "components/form_fields.html" %}
+  <div class="form-actions">
+    <button class="px-5 py-3 bg-ink text-paper font-semibold" type="submit">Registrar entrada</button>
+    <a class="px-5 py-3 bg-ink/10" href="{% url 'inventory:stock_list' %}">Voltar</a>
+  </div>
+</form>
+{% endblock %}

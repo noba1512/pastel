@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load pastel_tags %}
+{% block title %}Dashboard — Pastel da TATI{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+{% if not sales_count_today and not low_stock and not top_products %}
+{% include "components/empty.html" with title="Ainda sem movimento hoje" body="Quando o caixa fechar a primeira venda, o faturamento, o ticket e os produtos mais vendidos aparecem aqui. Estoque baixo também entra neste painel." action_url="/pdv/" action_label="Ir ao PDV" %}
+{% endif %}
+
+<section class="ticket text-ink px-4 py-4 sm:px-6 sm:py-5 mb-6">
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-0">
+    <div class="sm:pr-5">
+      <p class="font-mono text-[11px] tracking-[0.18em] uppercase">Faturamento</p>
+      <p class="mt-2 tabular text-3xl font-semibold leading-none">{{ revenue_today|brl }}</p>
+      <p class="mt-2 text-sm text-ink/60">hoje</p>
+    </div>
+    <div class="sm:px-5 sm:border-x sm:border-dashed sm:border-ink/20">
+      <p class="font-mono text-[11px] tracking-[0.18em] uppercase">Vendas hoje</p>
+      <p class="mt-2 tabular text-3xl font-semibold leading-none">{{ sales_count_today }}</p>
+    </div>
+    <div class="sm:pl-5">
+      <p class="font-mono text-[11px] tracking-[0.18em] uppercase">Ticket médio</p>
+      <p class="mt-2 tabular text-3xl font-semibold leading-none">{{ average_ticket_today|brl }}</p>
+    </div>
+  </div>
+</section>
+
+<div class="grid gap-5 lg:grid-cols-2">
+  <section class="ticket text-ink px-5 py-5">
+    <h2 class="text-xl font-semibold">Estoque baixo</h2>
+    {% if low_stock %}
+    <ul class="mt-4 divide-y divide-ink/10">
+      {% for stock in low_stock %}
+      <li class="py-3 flex justify-between gap-3 {% if stock.situation != 'ok' %}text-alarm{% endif %}">
+        <span>{{ stock.product.name }}</span>
+        <span class="tabular">{{ stock.quantity }} / mín. {{ stock.minimum_quantity }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="mt-3 text-ink/60">Nenhum produto abaixo do mínimo.</p>
+    {% endif %}
+  </section>
+
+  <section class="ticket text-ink px-5 py-5">
+    <h2 class="text-xl font-semibold">Mais vendidos</h2>
+    {% if top_products %}
+    <ul class="mt-4 divide-y divide-ink/10">
+      {% for row in top_products %}
+      <li class="py-3 flex justify-between gap-3">
+        <span>{{ row.product_name_snapshot }}</span>
+        <span class="tabular">{{ row.qty }} un · {{ row.amount|brl }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="mt-3 text-ink/60">Ainda sem ranking de vendas.</p>
+    {% endif %}
+  </section>
+</div>
+
+<section class="ticket text-ink px-5 py-5 mt-5">
+  <h2 class="text-xl font-semibold">Últimas vendas</h2>
+  {% if latest_sales %}
+  <ul class="mt-4 divide-y divide-ink/10">
+    {% for sale in latest_sales %}
+    <li class="py-3">
+      <a class="flex flex-wrap justify-between gap-3" href="{% url 'sales:detail' sale.pk %}">
+        <span class="font-mono underline">{{ sale.number }}</span>
+        <span>{{ sale.operator.username }}</span>
+        <span class="tabular">{{ sale.total|brl }}</span>
+        <span class="font-mono text-sm">{{ sale.finished_at|datetime_br }}</span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="mt-3 text-ink/60">Nenhuma venda concluída ainda.</p>
+  {% endif %}
+</section>
+{% endblock %}

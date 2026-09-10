@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load pastel_tags %}
+{% block title %}Caixa — Pastel da TATI{% endblock %}
+{% block page_title %}Caixa{% endblock %}
+{% block content %}
+<div class="flex flex-wrap gap-3 mb-5">
+  {% if open_session %}
+  <a class="px-4 py-2.5 bg-paper text-ink font-semibold" href="{% url 'sales:cash_close' %}">Fechar {{ open_session.number }}</a>
+  <a class="px-4 py-2.5 bg-white/10" href="{% url 'sales:pdv' %}">Ir ao PDV</a>
+  {% else %}
+  <a class="px-4 py-2.5 bg-paper text-ink font-semibold" href="{% url 'sales:cash_open' %}">Abrir caixa</a>
+  {% endif %}
+</div>
+<div class="md:hidden space-y-2">
+  {% for session in sessions %}
+  <a href="{% url 'sales:cash_detail' session.pk %}" class="ticket text-ink px-4 py-3 block">
+    <div class="flex justify-between gap-3">
+      <p class="font-mono font-semibold">{{ session.number }}</p>
+      <p class="{% if session.status == 'OPEN' %}{% else %}{% if session.difference_cash %}text-alarm{% endif %}{% endif %}">{{ session.status|cash_status_label }}</p>
+    </div>
+    <p class="mt-1 text-sm text-ink/70">{{ session.opened_at|datetime_br }} · {{ session.operator.username }}</p>
+    {% if session.status == "CLOSED" %}
+    <p class="mt-1 tabular">Vendas {{ session.sales_total|brl }} · Dif. {{ session.difference_cash|brl }}</p>
+    {% endif %}
+  </a>
+  {% empty %}
+  <p class="ticket text-ink px-4 py-6">Nenhum caixa ainda.</p>
+  {% endfor %}
+</div>
+<div class="ticket text-ink overflow-x-auto hidden md:block">
+  <table class="op-table w-full text-left">
+    <thead class="font-mono text-[12px] uppercase tracking-wider text-ink/60">
+      <tr>
+        <th class="px-4 py-3">Número</th>
+        <th class="px-4 py-3">Abertura</th>
+        <th class="px-4 py-3">Operador</th>
+        <th class="px-4 py-3">Status</th>
+        <th class="px-4 py-3">Vendas</th>
+        <th class="px-4 py-3">Diferença</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for session in sessions %}
+      <tr class="border-t border-ink/10" data-row-href="{% url 'sales:cash_detail' session.pk %}" tabindex="0">
+        <td class="px-4 py-3"><a class="font-mono underline" href="{% url 'sales:cash_detail' session.pk %}">{{ session.number }}</a></td>
+        <td class="px-4 py-3 font-mono text-sm">{{ session.opened_at|datetime_br }}</td>
+        <td class="px-4 py-3">{{ session.operator.username }}</td>
+        <td class="px-4 py-3">{{ session.status|cash_status_label }}</td>
+        <td class="px-4 py-3 tabular">{% if session.status == "CLOSED" %}{{ session.sales_total|brl }}{% else %}—{% endif %}</td>
+        <td class="px-4 py-3 tabular {% if session.difference_cash %}text-alarm{% endif %}">{% if session.status == "CLOSED" %}{{ session.difference_cash|brl }}{% else %}—{% endif %}</td>
+      </tr>
+      {% empty %}
+      <tr><td class="px-4 py-8" colspan="6">Nenhum caixa ainda.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "components/pagination.html" %}
+{% endblock %}

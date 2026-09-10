@@ -1,0 +1,32 @@
+<nav class="mobile-nav lg:hidden" aria-label="Navegação principal">
+  {% for item in mobile_nav %}
+  <a href="{% url item.url_name %}" class="mobile-nav-item {% if current_nav == item.url_name %}is-on{% endif %}">
+    {{ item.name }}
+  </a>
+  {% endfor %}
+  <button type="button" class="mobile-nav-item" data-open-drawer>Mais</button>
+</nav>
+
+<div id="mobile-drawer" class="mobile-drawer lg:hidden" hidden>
+  <button type="button" class="mobile-drawer-backdrop" data-close-drawer aria-label="Fechar menu"></button>
+  <aside class="mobile-drawer-panel" aria-label="Mais opções">
+    <p class="font-mono text-[11px] tracking-[0.22em] uppercase text-paper/55">Pastel da TATI</p>
+    <p class="mt-2 text-xl font-semibold">{{ user.get_username }}</p>
+    <p class="text-paper/60">{{ user_role_name }}</p>
+    {% if can_sell and open_cash_session %}
+    <a class="mt-4 block min-h-11 px-3 py-3 bg-paper text-ink font-mono" href="{% url 'sales:cash_close' %}">Fechar {{ open_cash_session.number }}</a>
+    {% elif can_sell %}
+    <a class="mt-4 block min-h-11 px-3 py-3 bg-white/10 font-mono" href="{% url 'sales:cash_open' %}">Abrir caixa</a>
+    {% endif %}
+    <nav class="mt-5 grid gap-1">
+      {% for item in nav_items %}
+      <a class="block min-h-11 px-3 py-3 {% if current_nav == item.url_name %}bg-paper text-ink{% else %}text-paper{% endif %}"
+         href="{% url item.url_name %}">{{ item.name }}</a>
+      {% endfor %}
+    </nav>
+    <form method="post" action="{% url 'accounts:logout' %}" class="mt-6">
+      {% csrf_token %}
+      <button type="submit" class="w-full min-h-11 bg-white/10">Sair</button>
+    </form>
+  </aside>
+</div>

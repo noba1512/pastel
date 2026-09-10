@@ -1,0 +1,22 @@
+<aside class="app-sidebar">
+  <div class="px-5 pt-5 pb-3">
+    <p class="font-mono text-[11px] tracking-[0.22em] uppercase text-paper/55">Pastel da TATI</p>
+    <p class="mt-2 text-2xl font-semibold leading-none">Operação</p>
+  </div>
+  <hr class="dash-rule mx-5 opacity-40">
+  <nav class="flex-1 px-3 py-3 space-y-0.5">
+    {% for item in nav_items %}
+    <a href="{% url item.url_name %}"
+       class="block px-3 py-2 text-[17px] {% if current_nav == item.url_name %}bg-paper text-ink{% else %}text-paper/80 hover:bg-white/5{% endif %}">
+      {{ item.name }}
+    </a>
+    {% endfor %}
+  </nav>
+  <div class="px-5 py-4 text-sm text-paper/60 border-t border-white/10">
+    <p class="font-mono">{{ user.get_username }}</p>
+    <p>{{ user_role_name }}</p>
+    {% if open_cash_session %}
+    <p class="mt-2 font-mono text-paper/80">{{ open_cash_session.number }} aberto</p>
+    {% endif %}
+  </div>
+</aside>

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Entrar — Pastel da TATI{% endblock %}
+{% block guest %}
+<main class="min-h-screen grid place-items-center px-4 py-10">
+  <div class="w-full max-w-md ticket text-ink">
+    <div class="ticket-perforation"></div>
+    <div class="px-5 sm:px-8 pt-6 pb-8">
+      <p class="font-mono text-[11px] tracking-[0.28em] uppercase">Cupom de acesso</p>
+      <h1 class="mt-3 text-3xl font-semibold leading-none">Pastel da TATI</h1>
+      <p class="mt-3 text-ink/70">Entre com seu usuário de operação.</p>
+      {% include "components/messages.html" %}
+      <form method="post" class="mt-6 grid grid-cols-1 gap-4" data-busy-submit data-busy-label="Entrando…">
+        {% csrf_token %}
+        <label class="block {% if form.username.errors %}has-error{% endif %}">
+          <span class="field-label">Usuário</span>
+          {{ form.username.errors }}
+          <input class="field" type="text" name="username" autocomplete="username" required autofocus value="{{ form.username.value|default:'' }}">
+        </label>
+        <label class="block {% if form.password.errors %}has-error{% endif %}">
+          <span class="field-label">Senha</span>
+          {{ form.password.errors }}
+          <input class="field" type="password" name="password" autocomplete="current-password" required>
+        </label>
+        <button class="w-full py-3.5 bg-ink text-paper text-lg font-semibold" type="submit">Entrar</button>
+      </form>
+    </div>
+    <div class="ticket-perforation"></div>
+  </div>
+</main>
+{% endblock %}

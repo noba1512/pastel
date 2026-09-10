@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% load l10n %}
+{% load pastel_tags %}
+{% block title %}PDV — Pastel da TATI{% endblock %}
+{% block page_title %}PDV{% endblock %}
+{% block content %}
+<div id="pdv-root"
+     data-checkout-url="{% url 'sales:pdv_checkout' %}"
+     data-search-url="{% url 'sales:pdv_search' %}"
+     data-can-discount="{% if can_apply_discount %}1{% else %}0{% endif %}">
+  <div id="sale-banner" class="hidden mb-4 px-4 py-3 bg-stamp text-paper sale-stamp"></div>
+  <div id="pdv-error" class="hidden mb-4 px-4 py-3 bg-alarm text-paper" role="alert"></div>
+
+  <div class="pdv-stage">
+    <section class="pdv-catalog">
+      <div class="pdv-search-wrap">
+        <label class="block">
+          <span class="sr-only">Buscar produto</span>
+          <input id="pdv-search" class="field" type="search"
+                 placeholder="Nome ou SKU  ·  / foca aqui" autofocus autocomplete="off">
+        </label>
+        <div id="pdv-cats" class="flex flex-wrap gap-2 mt-3">
+          <button type="button" data-category="" class="invert-row is-on min-h-11 px-3 py-2 bg-white/10">Todas</button>
+          {% for category in categories %}
+          <button type="button" data-category="{{ category.pk }}" class="invert-row min-h-11 px-3 py-2 bg-white/10">{{ category.name }}</button>
+          {% endfor %}
+        </div>
+        <p class="hidden lg:block mt-2 text-sm text-paper/50"><kbd>Enter</kbd> adiciona o primeiro · <kbd>F9</kbd> finaliza</p>
+      </div>
+      <p id="pdv-none" class="hidden mt-3 text-paper/70">Nenhum produto nesta busca.</p>
+      <div id="pdv-grid" class="pdv-grid app-scroll grid grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3 mt-3">
+        {% for product in products %}
+        <button type="button"
+                class="product-hit ticket text-ink text-left px-3 py-3 sm:px-4 sm:py-4 {% if not product.stock or product.stock.quantity <= 0 %}is-out{% elif product.stock.quantity <= product.stock.minimum_quantity %}is-low{% endif %}"
+                data-product
+                data-id="{{ product.id }}"
+                data-name="{{ product.name }}"
+                data-sku="{{ product.sku }}"
+                data-price="{{ product.sale_price|unlocalize }}"
+                data-category="{{ product.category_id }}"
+                data-category-name="{{ product.category.name }}"
+                data-stock="{% if product.stock %}{{ product.stock.quantity }}{% else %}0{% endif %}"
+                data-min="{% if product.stock %}{{ product.stock.minimum_quantity }}{% else %}0{% endif %}"
+                {% if not product.stock or product.stock.quantity <= 0 %}disabled{% endif %}>
+          <span class="block font-semibold text-base sm:text-lg leading-tight">{{ product.name }}</span>
+          <span class="block mt-1 text-xs sm:text-sm text-ink/60">{{ product.category.name }}</span>
+          <span class="mt-2 flex items-end justify-between gap-2">
+            <span class="tabular text-lg sm:text-xl">{{ product.sale_price|brl }}</span>
+            <span class="stock-line font-mono text-xs">{% if product.stock %}{{ product.stock.quantity }}{% else %}0{% endif %} un</span>
+          </span>
+        </button>
+        {% empty %}
+        <p class="text-paper/70 col-span-full">Nenhum produto ativo. Peça ao gerente para cadastrar.</p>
+        {% endfor %}
+      </div>
+    </section>
+
+    <aside id="pdv-cart" class="pdv-cart ticket text-ink">
+      <button type="button" id="pdv-cart-toggle" class="lg:hidden w-full px-4 py-3 flex items-center justify-between gap-3">
+        <span>
+          <span class="font-mono text-[11px] tracking-[0.18em] uppercase block">Pedido</span>
+          <span id="cart-count">0 itens</span>
+        </span>
+        <span id="cart-total-mobile" class="tabular text-2xl font-semibold">R$ 0,00</span>
+      </button>
+      <div class="pdv-cart-body app-scroll">
+        <div class="hidden lg:block ticket-perforation"></div>
+        <div class="px-5 pt-2 lg:pt-4 pb-5">
+          <p class="hidden lg:block font-mono text-[11px] tracking-[0.22em] uppercase">Pedido atual</p>
+          <p id="receipt-number" class="hidden lg:block mt-1 font-mono text-lg">NOVA</p>
+          <p class="hidden lg:flex mt-1 items-center justify-between gap-2 text-sm">
+            <span class="font-mono text-ink/70">{{ cash_session.number }}</span>
+            <a class="underline" href="{% url 'sales:cash_close' %}">Fechar caixa</a>
+          </p>
+          <hr class="dash-rule my-3">
+          <div id="cart-empty" class="py-6 text-ink/60">Toque um produto para montar o pedido.</div>
+          <ul id="cart-lines" class="space-y-3 hidden"></ul>
+          <hr class="dash-rule my-4">
+          <div class="flex justify-between text-sm">
+            <span>Subtotal</span>
+            <span id="cart-subtotal" class="tabular">R$ 0,00</span>
+          </div>
+          {% if can_apply_discount %}
+          <label class="flex items-center justify-between gap-3 mt-2 text-sm">
+            <span>Desconto</span>
+            <input id="cart-discount" class="field field-compact tabular text-right w-28" type="text" inputmode="decimal" value="0,00">
+          </label>
+          {% else %}
+          <input id="cart-discount" type="hidden" value="0">
+          {% endif %}
+          <div class="mt-4 flex items-end justify-between">
+            <span class="font-mono text-[11px] tracking-[0.18em] uppercase">Total</span>
+            <span id="cart-total" class="tabular text-3xl sm:text-4xl font-semibold leading-none">R$ 0,00</span>
+          </div>
+
+          <fieldset class="mt-5">
+            <legend class="mb-2 text-sm">Pagamento</legend>
+            <div class="grid grid-cols-2 gap-2">
+              {% for value, label in payment_methods %}
+              <label class="invert-row min-h-11 px-3 py-3 bg-ink/5 cursor-pointer">
+                <input class="sr-only" type="radio" name="payment_method" value="{{ value }}" {% if value == "DINHEIRO" %}checked{% endif %}>
+                <span>{{ label }}</span>
+              </label>
+              {% endfor %}
+            </div>
+          </fieldset>
+
+          <div id="cash-box" class="mt-4 space-y-2">
+            <label class="block min-w-0">
+              <span class="field-label">Valor recebido</span>
+              <input id="amount-received" class="field tabular text-lg" type="text" inputmode="decimal" placeholder="0,00">
+            </label>
+            <button id="btn-exact" type="button" class="w-full min-h-11 py-2 bg-ink/10 text-sm">Valor exato</button>
+            <p class="flex justify-between">
+              <span>Troco</span>
+              <span id="cart-change" class="tabular text-xl font-semibold">R$ 0,00</span>
+            </p>
+          </div>
+
+          <label class="mt-4 flex items-center gap-3 text-sm">
+            <input id="print-receipt" type="checkbox" checked>
+            Imprimir comprovante
+          </label>
+
+          <div class="mt-4 grid grid-cols-2 gap-2">
+            <button id="btn-clear" type="button" class="min-h-11 py-3 bg-ink/10">Limpar</button>
+            <button id="btn-checkout" type="button" class="min-h-11 py-3 bg-ink text-paper font-semibold">Finalizar · F9</button>
+          </div>
+          <a class="mt-3 block text-center underline text-sm" href="{% url 'sales:cash_close' %}">Fechar caixa {{ cash_session.number }}</a>
+        </div>
+        <div class="hidden lg:block ticket-perforation"></div>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/pdv.js' %}"></script>
+{% endblock %}

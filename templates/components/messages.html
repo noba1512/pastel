@@ -1,0 +1,9 @@
+{% if messages %}
+<div class="mb-4 space-y-2" data-flash>
+  {% for message in messages %}
+  <p class="px-4 py-3 {% if message.tags == 'error' %}bg-alarm text-paper{% elif message.tags == 'success' %}bg-stamp text-paper{% else %}bg-paper text-ink{% endif %}" {% if message.tags != 'error' %}data-flash-item{% endif %}>
+    {{ message }}
+  </p>
+  {% endfor %}
+</div>
+{% endif %}

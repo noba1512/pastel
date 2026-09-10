@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load pastel_tags %}
+{% block title %}Caixa {{ session.number }} — Pastel da TATI{% endblock %}
+{% block page_title %}Caixa {{ session.number }}{% endblock %}
+{% block content %}
+<div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
+  <div class="ticket text-ink">
+    <div class="ticket-perforation"></div>
+    <div class="px-5 py-5">
+      <p class="font-mono text-[11px] tracking-[0.22em] uppercase">{{ session.status|cash_status_label }}</p>
+      <p class="mt-2">Aberto {{ session.opened_at|datetime_br }} · {{ session.operator.username }}</p>
+      {% if session.closed_at %}
+      <p>Fechado {{ session.closed_at|datetime_br }} · {{ session.closed_by }}</p>
+      {% endif %}
+      <hr class="dash-rule my-4">
+      <p class="flex justify-between"><span>Fundo</span><span class="tabular">{{ session.opening_amount|brl }}</span></p>
+      {% if session.status == "CLOSED" %}
+      <p class="flex justify-between"><span>Dinheiro esperado</span><span class="tabular">{{ session.expected_cash|brl }}</span></p>
+      <p class="flex justify-between"><span>Dinheiro conferido</span><span class="tabular">{{ session.counted_cash|brl }}</span></p>
+      <p class="flex justify-between {% if session.difference_cash %}text-alarm font-semibold{% endif %}">
+        <span>Diferença dinheiro</span>
+        <span class="tabular">{{ session.difference_cash|brl }} {{ session.difference_cash|difference_label }}</span>
+      </p>
+      <hr class="dash-rule my-4">
+      <p class="flex justify-between"><span>PIX</span><span class="tabular">{{ session.counted_pix|brl }} / {{ session.expected_pix|brl }}</span></p>
+      <p class="flex justify-between"><span>Débito</span><span class="tabular">{{ session.counted_debit|brl }} / {{ session.expected_debit|brl }}</span></p>
+      <p class="flex justify-between"><span>Crédito</span><span class="tabular">{{ session.counted_credit|brl }} / {{ session.expected_credit|brl }}</span></p>
+      <hr class="dash-rule my-4">
+      <p class="flex justify-between"><span>Vendas</span><span>{{ session.sales_count }}</span></p>
+      <p class="flex justify-between"><span>Canceladas</span><span>{{ session.canceled_count }}</span></p>
+      <p class="mt-3 flex justify-between items-end">
+        <span class="font-mono text-[11px] tracking-[0.18em] uppercase">Total vendas</span>
+        <span class="tabular text-3xl font-semibold">{{ session.sales_total|brl }}</span>
+      </p>
+      {% if session.notes %}
+      <hr class="dash-rule my-4">
+      <p>{{ session.notes }}</p>
+      {% endif %}
+      {% else %}
+      <p class="flex justify-between"><span>Dinheiro esperado</span><span class="tabular">{{ totals.expected_cash|brl }}</span></p>
+      <p class="flex justify-between"><span>PIX</span><span class="tabular">{{ totals.expected_pix|brl }}</span></p>
+      <p class="flex justify-between"><span>Débito</span><span class="tabular">{{ totals.expected_debit|brl }}</span></p>
+      <p class="flex justify-between"><span>Crédito</span><span class="tabular">{{ totals.expected_credit|brl }}</span></p>
+      <p class="mt-3 flex justify-between items-end">
+        <span class="font-mono text-[11px] tracking-[0.18em] uppercase">Total vendas</span>
+        <span class="tabular text-3xl font-semibold">{{ totals.sales_total|brl }}</span>
+      </p>
+      {% endif %}
+    </div>
+    <div class="ticket-perforation"></div>
+  </div>
+  <div class="space-y-3">
+    <form method="post" action="{% url 'sales:cash_print' session.pk %}">
+      {% csrf_token %}
+      <input type="hidden" name="tipo" value="abertura">
+      <button class="w-full py-3 bg-ink/10 font-semibold" type="submit">Imprimir abertura</button>
+    </form>
+    {% if session.status == "CLOSED" %}
+    <form method="post" action="{% url 'sales:cash_print' session.pk %}">
+      {% csrf_token %}
+      <input type="hidden" name="tipo" value="fechamento">
+      <button class="w-full py-3 bg-ink text-paper font-semibold" type="submit">Imprimir conferência</button>
+    </form>
+    {% elif can_close %}
+    <a class="block w-full py-3 bg-ink text-paper font-semibold text-center" href="{% url 'sales:cash_close_pk' session.pk %}">Conferir e fechar</a>
+    {% endif %}
+    <a class="block w-full py-3 bg-ink/10 text-center" href="{% url 'sales:cash_list' %}">Lista de caixas</a>
+  </div>
+</div>
+{% endblock %}

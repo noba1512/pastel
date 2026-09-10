@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load pastel_tags %}
+{% block title %}Estoque — Pastel da TATI{% endblock %}
+{% block page_title %}Estoque{% endblock %}
+{% block content %}
+<div class="flex flex-wrap gap-2 mb-5">
+  <a class="min-h-11 px-3 py-2 {% if not situation %}bg-paper text-ink{% else %}bg-white/10{% endif %}" href="{% url 'inventory:stock_list' %}">Todos</a>
+  <a class="min-h-11 px-3 py-2 {% if situation == 'low' %}bg-paper text-ink{% else %}bg-white/10{% endif %}" href="?situation=low">Baixo</a>
+  <a class="min-h-11 px-3 py-2 {% if situation == 'out' %}bg-paper text-ink{% else %}bg-white/10{% endif %}" href="?situation=out">Sem estoque</a>
+  {% if can_adjust_stock %}
+  <a class="min-h-11 px-4 py-2 bg-paper text-ink font-semibold" href="{% url 'inventory:stock_entry' %}">Entrada</a>
+  <a class="min-h-11 px-4 py-2 bg-white/10" href="{% url 'inventory:stock_adjust' %}">Ajuste</a>
+  <a class="min-h-11 px-4 py-2 bg-white/10" href="{% url 'inventory:movement_list' %}">Movimentações</a>
+  {% endif %}
+</div>
+<div class="md:hidden space-y-2">
+  {% for stock in stocks %}
+  <article class="ticket text-ink px-4 py-3 {% if stock.situation != 'ok' %}row-alarm{% endif %}">
+    <div class="flex justify-between gap-3">
+      <div>
+        <p class="font-semibold">{{ stock.product.name }}</p>
+        <p class="text-sm text-ink/70">{{ stock.product.category.name }}</p>
+      </div>
+      <p class="tabular font-semibold {% if stock.situation != 'ok' %}text-alarm{% endif %}">{{ stock.quantity }}</p>
+    </div>
+    <p class="mt-1 text-sm">mín. {{ stock.minimum_quantity }} · {{ stock.situation_label }}</p>
+    {% if can_adjust_stock %}
+    <div class="mt-3 flex gap-2">
+      <a class="min-h-11 px-4 py-2 bg-ink text-paper" href="{% url 'inventory:stock_entry' %}?product={{ stock.product_id }}">Entrada</a>
+      <a class="min-h-11 px-4 py-2 bg-ink/10" href="{% url 'inventory:stock_adjust' %}?product={{ stock.product_id }}">Ajuste</a>
+    </div>
+    {% endif %}
+  </article>
+  {% empty %}
+  <p class="ticket text-ink px-4 py-6">Nenhum estoque cadastrado.</p>
+  {% endfor %}
+</div>
+<div class="ticket text-ink overflow-x-auto hidden md:block">
+  <table class="op-table w-full text-left">
+    <thead class="font-mono text-[12px] uppercase tracking-wider text-ink/60">
+      <tr>
+        <th class="px-4 py-3">Produto</th>
+        <th class="px-4 py-3">Categoria</th>
+        <th class="px-4 py-3">Atual</th>
+        <th class="px-4 py-3">Mínimo</th>
+        <th class="px-4 py-3">Situação</th>
+        {% if can_adjust_stock %}<th class="px-4 py-3"></th>{% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for stock in stocks %}
+      <tr class="border-t border-ink/10 {% if stock.situation != 'ok' %}row-alarm{% endif %}">
+        <td class="px-4 py-3">{{ stock.product.name }}</td>
+        <td class="px-4 py-3">{{ stock.product.category.name }}</td>
+        <td class="px-4 py-3 tabular font-semibold">{{ stock.quantity }}</td>
+        <td class="px-4 py-3 tabular">{{ stock.minimum_quantity }}</td>
+        <td class="px-4 py-3 {% if stock.situation != 'ok' %}text-alarm font-semibold{% endif %}">{{ stock.situation_label }}</td>
+        {% if can_adjust_stock %}
+        <td class="px-4 py-3 text-right space-x-3">
+          <a class="underline" href="{% url 'inventory:stock_entry' %}?product={{ stock.product_id }}">Entrada</a>
+          <a class="underline" href="{% url 'inventory:stock_adjust' %}?product={{ stock.product_id }}">Ajuste</a>
+        </td>
+        {% endif %}
+      </tr>
+      {% empty %}
+      <tr><td class="px-4 py-8" colspan="6">Nenhum estoque cadastrado.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "components/pagination.html" %}
+{% endblock %}

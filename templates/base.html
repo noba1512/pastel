@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}Pastel da TATI{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fragment+Mono&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            paper: "#e4e8df",
+            ink: "#111411",
+            housing: "#1c211c",
+            alarm: "#c23b22",
+            stamp: "#2f4a32",
+          },
+          fontFamily: {
+            sans: ['"Source Sans 3"', "Segoe UI", "sans-serif"],
+            mono: ['"Fragment Mono"', "ui-monospace", "monospace"],
+          },
+        },
+      },
+    };
+  </script>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body class="min-h-screen bg-housing text-paper antialiased {% if user.is_authenticated %}has-mobile-chrome{% endif %} {% if is_pdv %}is-pdv{% endif %}">
+  <!--
+    THESIS: A venda é um cupom térmico saindo no balcão; recusa o dashboard SaaS de cards de métrica como casa do trabalho.
+    OWN-WORLD: Campo de papel térmico frio (#e4e8df), carcaça da impressora (#1c211c), picote tracejado, dinheiro em Fragment Mono, um único alarme vermelhão.
+    STORY: Caixa acha produto, monta o cupom, recebe, vê o número carimbado, começa o próximo ticket.
+    FIRST VIEWPORT: Esquerda campo de produtos com busca em foco; direita coluna-cupom com TOTAL pregado; ação primária Finalizar no pé do cupom.
+    FORM: Cupom térmico / recibo TEF, candidato 3 da lista, seed c1630a84.
+    FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+  -->
+  {% if user.is_authenticated %}
+  <div class="app-shell">
+    {% include "components/sidebar.html" %}
+    <div class="workspace">
+      <header class="app-header z-30 flex items-center justify-between gap-3 border-b border-white/10 px-3 py-2.5 lg:px-8 lg:py-3">
+        <div class="flex items-center gap-2 min-w-0">
+          <button type="button" class="lg:hidden min-h-11 min-w-11 bg-white/5" data-open-drawer>Menu</button>
+          <h1 class="truncate text-lg sm:text-xl font-semibold">{% block page_title %}{% endblock %}</h1>
+        </div>
+        <div class="flex items-center gap-2">
+          {% if can_sell and open_cash_session %}
+          <a class="inline-flex font-mono text-xs sm:text-sm px-2.5 sm:px-3 py-2 bg-paper text-ink" href="{% url 'sales:cash_close' %}">{{ open_cash_session.number }}</a>
+          {% elif can_sell %}
+          <a class="inline-flex font-mono text-xs sm:text-sm px-2.5 sm:px-3 py-2 bg-white/10" href="{% url 'sales:cash_open' %}">Abrir caixa</a>
+          {% endif %}
+          <form method="post" action="{% url 'accounts:logout' %}" class="hidden lg:block">
+            {% csrf_token %}
+            <button type="submit" class="px-4 py-2 text-sm bg-white/10 hover:bg-white/15">Sair</button>
+          </form>
+        </div>
+      </header>
+      <main class="app-main px-3 py-4 sm:px-4 sm:py-5 lg:px-8 lg:py-6">
+        {% include "components/messages.html" %}
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+  {% include "components/mobile_chrome.html" %}
+  {% else %}
+  {% block guest %}{% endblock %}
+  {% endif %}
+  {% load static %}
+  <script src="{% static 'js/app.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

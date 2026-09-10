@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Sem permissão — Pastel da TATI{% endblock %}
+{% block page_title %}Sem permissão{% endblock %}
+{% block guest %}
+<main class="min-h-screen grid place-items-center px-4">
+  <div class="ticket text-ink max-w-md">
+    <div class="ticket-perforation"></div>
+    <div class="px-8 py-8">
+    <p class="text-2xl font-semibold">Acesso negado</p>
+    <p class="mt-2">Seu usuário não pode abrir esta página.</p>
+    <a class="inline-block mt-6 px-4 py-2 bg-ink text-paper" href="{% url 'accounts:login' %}">Voltar ao login</a>
+    </div>
+    <div class="ticket-perforation"></div>
+  </div>
+</main>
+{% endblock %}
+{% block content %}
+<div class="ticket text-ink max-w-lg">
+  <div class="ticket-perforation"></div>
+  <div class="px-5 py-8">
+  <p class="text-2xl font-semibold">Acesso negado</p>
+  <p class="mt-2 text-ink/70">Seu perfil não acessa esta função. Use o menu.</p>
+  <a class="inline-block mt-6 px-5 py-3 bg-ink text-paper font-semibold" href="{% url 'accounts:post_login' %}">Voltar</a>
+  </div>
+  <div class="ticket-perforation"></div>
+</div>
+{% endblock %}

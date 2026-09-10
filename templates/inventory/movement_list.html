@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load pastel_tags %}
+{% block title %}Movimentações — Pastel da TATI{% endblock %}
+{% block page_title %}Movimentações{% endblock %}
+{% block content %}
+<div class="flex mb-5">
+  <a class="min-h-11 px-4 py-2.5 bg-white/10" href="{% url 'inventory:stock_list' %}">Voltar ao estoque</a>
+</div>
+<div class="md:hidden space-y-2">
+  {% for move in movements %}
+  <article class="ticket text-ink px-4 py-3">
+    <p class="font-semibold">{{ move.product.name }}</p>
+    <p class="text-sm">{{ move.get_type_display }} · {{ move.quantity }} un</p>
+    <p class="text-sm text-ink/70">{{ move.quantity_before }} → {{ move.quantity_after }} · {{ move.user.username }}</p>
+    <p class="font-mono text-sm mt-1">{{ move.created_at|datetime_br }}</p>
+  </article>
+  {% empty %}
+  <p class="ticket text-ink px-4 py-6">Nenhuma movimentação ainda.</p>
+  {% endfor %}
+</div>
+<div class="ticket text-ink overflow-x-auto hidden md:block">
+  <table class="op-table w-full text-left">
+    <thead class="font-mono text-[12px] uppercase tracking-wider text-ink/60">
+      <tr>
+        <th class="px-4 py-3">Quando</th>
+        <th class="px-4 py-3">Produto</th>
+        <th class="px-4 py-3">Tipo</th>
+        <th class="px-4 py-3">Qtd</th>
+        <th class="px-4 py-3">Antes</th>
+        <th class="px-4 py-3">Depois</th>
+        <th class="px-4 py-3">Usuário</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for move in movements %}
+      <tr class="border-t border-ink/10">
+        <td class="px-4 py-3 font-mono text-sm">{{ move.created_at|datetime_br }}</td>
+        <td class="px-4 py-3">{{ move.product.name }}</td>
+        <td class="px-4 py-3">{{ move.get_type_display }}</td>
+        <td class="px-4 py-3 tabular">{{ move.quantity }}</td>
+        <td class="px-4 py-3 tabular">{{ move.quantity_before }}</td>
+        <td class="px-4 py-3 tabular">{{ move.quantity_after }}</td>
+        <td class="px-4 py-3">{{ move.user.username }}</td>
+      </tr>
+      {% empty %}
+      <tr><td class="px-4 py-8" colspan="7">Nenhuma movimentação ainda.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "components/pagination.html" %}
+{% endblock %}

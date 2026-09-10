@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load pastel_tags %}
+{% block title %}Usuários — Pastel da TATI{% endblock %}
+{% block page_title %}Usuários{% endblock %}
+{% block content %}
+<div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-5">
+  <p class="text-paper/70">Quem opera o balcão e quem administra.</p>
+  {% if can_manage_users %}
+  <a class="min-h-11 px-4 py-2.5 bg-paper text-ink font-semibold text-center" href="{% url 'accounts:user_create' %}">Novo usuário</a>
+  {% endif %}
+</div>
+<div class="md:hidden space-y-2">
+  {% for item in users %}
+  <article class="ticket text-ink px-4 py-3">
+    <p class="font-mono font-semibold">{{ item.username }}</p>
+    <p class="text-sm">{{ item.get_full_name|default:"—" }} · {% for g in item.groups.all %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</p>
+    <p class="mt-1 text-sm">{% if item.is_active %}Ativo{% else %}<span class="text-alarm">Inativo</span>{% endif %}</p>
+    {% if can_manage_users %}
+    <a class="inline-block mt-3 min-h-11 px-4 py-2 bg-ink text-paper" href="{% url 'accounts:user_update' item.pk %}">Editar</a>
+    {% endif %}
+  </article>
+  {% empty %}
+  <p class="ticket text-ink px-4 py-6">Nenhum usuário cadastrado.</p>
+  {% endfor %}
+</div>
+<div class="ticket text-ink overflow-x-auto hidden md:block">
+  <table class="op-table w-full text-left">
+    <thead class="font-mono text-[12px] uppercase tracking-wider text-ink/60">
+      <tr>
+        <th class="px-4 py-3">Usuário</th>
+        <th class="px-4 py-3">Nome</th>
+        <th class="px-4 py-3">Grupo</th>
+        <th class="px-4 py-3">Situação</th>
+        {% if can_manage_users %}<th class="px-4 py-3"></th>{% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in users %}
+      <tr class="border-t border-ink/10" {% if can_manage_users %}data-row-href="{% url 'accounts:user_update' item.pk %}" tabindex="0"{% endif %}>
+        <td class="px-4 py-3 font-mono">{{ item.username }}</td>
+        <td class="px-4 py-3">{{ item.get_full_name|default:"—" }}</td>
+        <td class="px-4 py-3">{% for g in item.groups.all %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
+        <td class="px-4 py-3">{% if item.is_active %}Ativo{% else %}<span class="text-alarm">Inativo</span>{% endif %}</td>
+        {% if can_manage_users %}
+        <td class="px-4 py-3 text-right">
+          <a class="underline" href="{% url 'accounts:user_update' item.pk %}">Editar</a>
+        </td>
+        {% endif %}
+      </tr>
+      {% empty %}
+      <tr><td class="px-4 py-8" colspan="5">Nenhum usuário cadastrado.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "components/pagination.html" %}
+{% endblock %}

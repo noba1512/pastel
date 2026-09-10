@@ -1,0 +1,21 @@
+<div class="form-fields{% if fields_layout %} {{ fields_layout }}{% endif %}">
+  {% for field in form %}
+    {% if field.field.widget.input_type == "checkbox" %}
+    <label class="field-check">
+      {{ field }}
+      <span>
+        <span class="block font-semibold">{{ field.label }}</span>
+        {% if field.help_text %}<span class="form-help">{{ field.help_text }}</span>{% endif %}
+        {{ field.errors }}
+      </span>
+    </label>
+    {% else %}
+    <label class="block min-w-0 {% if field.errors %}has-error{% endif %} {% if field.field.widget.attrs.rows %}is-wide{% endif %}">
+      <span class="field-label">{{ field.label }}</span>
+      {% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}
+      {{ field }}
+      {% if field.help_text %}<span class="form-help">{{ field.help_text }}</span>{% endif %}
+    </label>
+    {% endif %}
+  {% endfor %}
+</div>

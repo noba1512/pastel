@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — Pastel da TATI{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block content %}
+<form method="post" class="ticket text-ink w-full px-4 py-5 sm:px-6 md:px-8" data-busy-submit data-busy-label="Salvando…">
+  {% csrf_token %}
+  {% include "components/form_fields.html" %}
+  <p class="mt-4 text-sm text-ink/60">Produto com histórico de venda não é apagado. Use desativar.</p>
+  <div class="form-actions">
+    <button class="px-5 py-3 bg-ink text-paper font-semibold" type="submit">Salvar</button>
+    <a class="px-5 py-3 bg-ink/10" href="{% url 'catalog:product_list' %}">Voltar</a>
+  </div>
+</form>
+{% endblock %}
